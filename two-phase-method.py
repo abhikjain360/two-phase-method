@@ -27,27 +27,29 @@ if __name__ == '__main__' :
     print("Enter the number of inequalities : ", end='')
     n1 = int(input())
 
-    print("Enter LHS of inequalities in less-than form : ")
-    for i in range(n1):
-        inequalities.append(list(map(int, input().split())))
+    if n1 != 0:
+        print("Enter LHS of inequalities in less-than form : ")
+        for i in range(n1):
+            inequalities.append(list(map(int, input().split())))
 
-    # taking inequalities RHS
-    print("Enter RHS of inequalties : ")
-    for i in range(n1):
-        B.append(int(input()))
+        # taking inequalities RHS
+        print("Enter RHS of inequalties : ")
+        for i in range(n1):
+            B.append(int(input()))
     
     # taking equalities LHS
     print("Enter the number of equalities : ", end='')
     n2 = int(input())
 
-    print("Enter the LHS equalities : ")
-    for i in range(n2):
-        equalities.append(list(map(int ,input().split())))
+    if n2 != 0:
+        print("Enter the LHS equalities : ")
+        for i in range(n2):
+            equalities.append(list(map(int ,input().split())))
     
-    # taking equalities RHS
-    print("Enter the RHS of inequalities : ")
-    for i in range(n2):
-        B.append(int(input()))
+        # taking equalities RHS
+        print("Enter the RHS of inequalities : ")
+        for i in range(n2):
+            B.append(int(input()))
 
     equalities = np.array(equalities)
     inequalities = np.array(inequalities)
@@ -79,20 +81,46 @@ if __name__ == '__main__' :
     Z_ = np.zeros(var_count)
     Z_ = np.pad(Z_, (0, a_count), 'constant', constant_values=1)
 
-    inequalities = np.pad(inequalities, ((0,0), (0,extra_count)), 'constant', constant_values=0)
-    equalities = np.pad(equalities, ((0,0), (0,extra_count)), 'constant', constant_values=0)
+    if n1 != 0:
+        inequalities = np.pad(inequalities, ((0,0), (0,extra_count)), 'constant', constant_values=0)
+    
+    if n2 != 0:
+        equalities = np.pad(equalities, ((0,0), (0,extra_count)), 'constant', constant_values=0)
 
+    Z = np.pad(Z, (0, extra_count), 'constant', constant_values=0)
+
+    # to keep track of index of basic variables and their coefficients
+    basic_index = []
+    basic_coeff = []
+
+    # variable to add artificial variables in case of surplus variables
     temp = var_count + n1
 
     # adding extra variables to inequalities
     for i in range(n1):
-        inequalities[i][var_count] = S_coeff[i]
+        inequalities[i][var_count + i] = S_coeff[i]
         if S_coeff[i] == -1:
             inequalities[i][temp] = 1
             temp += 1
+        else:
+            basic_index.append(var_count + i)
 
     # adding extra variables to equalities
     for i in range(n2):
         equalities[i][var_count + n1 + a_count_1 + i] = 1
+        basic_index.append(var_count + n1 + a_count_1 + i)
+
+    # getting coefficients for the basic variables
+    for i in basic_index:
+        basic_coeff.append(Z[i])
+
+    # generating the simplex table
+    table = np.append(inequalities, equalities, axis=0)
+    B = np.reshape(B, (extra_count, 1))
+    table = np.append(table, B, axis=1)
+
+    '''
+    phase 1
+    '''
 
     
