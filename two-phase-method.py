@@ -2,6 +2,31 @@ import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
 
+
+# method to calculate the profit
+def calculateProfit(table, Z, basic_coeff, total_count):
+    P = []
+    table = np.transpose(table)
+    for i in range(total_count):
+        print(Z[i] - basic_coeff * table[i])
+        P.append(Z[i] - basic_coeff * table[i])
+    
+    return P
+
+
+# method to perform Gauss-Jordan Elimination on the simplex table
+def gauss_jorad_elimination(table, row_index, column_index):
+    
+    # first converting the coefficient to 1
+    table[row_index] /= table[row_index][column_index]
+
+    # eliminating from rest of the constraints
+    for i in range(len(table)):
+        table[i] -= table[row_index] * table[i][column_index]
+
+    return table
+
+
 if __name__ == '__main__' :
 
     '''
@@ -51,6 +76,10 @@ if __name__ == '__main__' :
         for i in range(n2):
             B.append(int(input()))
 
+    if n1 == 0 and n2 == 0:
+        print("No constraints entered!!")
+        exit(0)
+    
     equalities = np.array(equalities)
     inequalities = np.array(inequalities)
     B = np.array(B)
@@ -78,8 +107,6 @@ if __name__ == '__main__' :
 
     # padding equations with zeroes for new variables
     Z = np.pad(Z, (0, S_count), 'constant', constant_values=0)
-    Z_ = np.zeros(var_count)
-    Z_ = np.pad(Z_, (0, a_count), 'constant', constant_values=1)
 
     if n1 != 0:
         inequalities = np.pad(inequalities, ((0,0), (0,extra_count)), 'constant', constant_values=0)
@@ -87,7 +114,7 @@ if __name__ == '__main__' :
     if n2 != 0:
         equalities = np.pad(equalities, ((0,0), (0,extra_count)), 'constant', constant_values=0)
 
-    Z = np.pad(Z, (0, extra_count), 'constant', constant_values=0)
+    Z = np.pad(Z, (0, S_count), 'constant', constant_values=0)
 
     # to keep track of index of basic variables and their coefficients
     basic_index = []
@@ -115,12 +142,22 @@ if __name__ == '__main__' :
         basic_coeff.append(Z[i])
 
     # generating the simplex table
-    table = np.append(inequalities, equalities, axis=0)
-    B = np.reshape(B, (extra_count, 1))
-    table = np.append(table, B, axis=1)
+    if n1 == 0:
+        table = equalities
+    elif n2 == 0:
+        table = inequalities
+    else:
+        table = np.append(inequalities, equalities, axis=0)
+        B = np.reshape(B, (extra_count, 1))
+        table = np.append(table, B, axis=1)
 
     '''
     phase 1
     '''
 
-    
+    # objective function for phase 1
+    Z_ = np.zeros(var_count + S_count)
+    Z_ = np.pad(Z_, (0, a_count), 'constant', constant_values=1)
+
+    # calculating profit initially
+    P = calculateProfit(table, Z_, basic_coeff, n1 + n2)
