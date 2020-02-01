@@ -159,7 +159,7 @@ if __name__ == '__main__' :
     Z_ = np.pad(Z_, (0, a_count), 'constant', constant_values=1)
 
     # calculating profit
-    P = calculateProfit(table, Z_, basic_coeff, total_count)
+    P = calculateProfit(table, Z_, basic_coeff, extra_count+var_count)
 
     # list to compare profit to
     all_true = np.ones(var_count+extra_count, dtype=bool)
@@ -189,4 +189,4 @@ if __name__ == '__main__' :
         
         table = gauss_jorad_elimination(table, row_index, column_index)
         
-        P = calculateProfit(table, Z_, basic_coeff, total_count)
+        P = calculateProfit(table, Z_, basic_coeff, extra_count+var_count)
