@@ -1,6 +1,5 @@
 import numpy as np
 import matplotlib.pyplot as plt
-import pandas as pd
 
 
 # method to calculate the profit
@@ -159,5 +158,35 @@ if __name__ == '__main__' :
     Z_ = np.zeros(var_count + S_count)
     Z_ = np.pad(Z_, (0, a_count), 'constant', constant_values=1)
 
-    # calculating profit initially
-    P = calculateProfit(table, Z_, basic_coeff, n1 + n2)
+    # calculating profit
+    P = calculateProfit(table, Z_, basic_coeff, total_count)
+
+    # list to compare profit to
+    all_true = np.ones(var_count+extra_count, dtype=bool)
+
+    while (P >= 0) != all_true:
+
+        # getting the entering variable
+        # no need to worry about positive profit
+        # as already eliminated in looping condition
+        column_index = np.argmin(P)
+
+        # calculating the ratios
+        ratios = table[column_index]/table[-1]
+
+        # finding the leaving variable
+        row_index = -1
+        temp = max(ratio)
+        for i in range(n1 + n2):
+            if ratios[i] > 0 and temp > ratios[i]:
+                temp = ratios[i]
+                row_index = i
+
+        # when no leaving variable is found
+        if row_index == -1:
+            print("No Solutions!!")
+            exit(0)
+        
+        table = gauss_jorad_elimination(table, row_index, column_index)
+        
+        P = calculateProfit(table, Z_, basic_coeff, total_count)
