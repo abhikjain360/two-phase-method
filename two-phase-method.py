@@ -27,6 +27,7 @@ def optimalCondition(P, choice):
             if i > 0:
                 return True
         return False
+    
 
 # method to perform Gauss-Jordan Elimination on the simplex table
 def gauss_jordan_elimination(table, row_index, column_index):
@@ -178,10 +179,10 @@ if __name__ == '__main__' :
     for i in basic_index:
         basic_coeff.append(Z_[i])
 
-    # calculating profit
-    n = var_count + a_count + S_count
+    # calculating profit initially
     P = calculateProfit(table, Z_, basic_coeff, extra_count+var_count)
 
+    # applying simplex method repititively
     while optimalCondition(P, 'min'):
 
         # getting the entering variable
@@ -220,4 +221,52 @@ if __name__ == '__main__' :
     phase 2
     '''
 
-    
+    # removing all artificial variables from table
+    B = table[:, -1]
+    B = B.reshape((n1+n2, 1))
+    table = table[:, :-2]
+    table = np.append(table, B, axis=1)
+
+    # getting coefficients for the basic variables
+    for i in basic_index:
+        basic_coeff.append(Z[i])
+
+    # calculating profit initially
+    P = calculateProfit(table, Z, basic_coeff, S_count+var_count)
+
+    # applying simplex method repititively
+    while optimalCondition(P, 'min'):
+
+        # getting the entering variable
+        # no need to worry about positive profit
+        # as already eliminated in looping condition
+        column_index = np.argmin(P)
+
+        T = table.transpose()
+
+        # calculating the ratios
+        ratios = T[-1]/T[column_index]
+
+        # finding the leaving variable
+        row_index = -1
+        temp = max(ratios) + 1
+        for i in range(n1 + n2):
+            if ratios[i] > 0 and temp > ratios[i]:
+                temp = ratios[i]
+                row_index = i
+
+        # changing the list of basic variables
+        basic_index[row_index] = column_index
+        basic_coeff[row_index] = Z[column_index]
+
+        # when no leaving variable is found
+        if row_index == -1:
+            print("No Solutions!!")
+            exit(0)
+        
+        table = gauss_jordan_elimination(table, row_index, column_index)
+        
+        P = calculateProfit(table, Z, basic_coeff, S_count+var_count)
+
+    print(table)
+    print(basic_index)
