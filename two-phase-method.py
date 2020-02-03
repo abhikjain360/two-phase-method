@@ -7,11 +7,20 @@ def calculateProfit(table, Z, basic_coeff, total_count):
     P = []
     table = np.transpose(table)
     for i in range(total_count):
-        print(Z[i] - basic_coeff * table[i])
-        P.append(Z[i] - basic_coeff * table[i])
+        Q = 0
+        for j in range(len(basic_coeff)):
+            Q += basic_coeff[j] * table[i][j]
+        P.append(Z[i] - Q)
     
-    return P
+    return np.array(P)
 
+
+# method to check optimality condition for simplex method
+def checkOptimalCondition(P):
+    for i in P:
+        if P < 0:
+            return True
+    return False
 
 # method to perform Gauss-Jordan Elimination on the simplex table
 def gauss_jorad_elimination(table, row_index, column_index):
@@ -102,18 +111,15 @@ if __name__ == '__main__' :
     a_count = a_count_1 + a_count_2
 
     # count of all variables introduced seperately
-    extra_count = a_count_1 + a_count_2 + S_count
+    extra_count = a_count + S_count
 
     # padding equations with zeroes for new variables
     Z = np.pad(Z, (0, S_count), 'constant', constant_values=0)
-
     if n1 != 0:
         inequalities = np.pad(inequalities, ((0,0), (0,extra_count)), 'constant', constant_values=0)
     
     if n2 != 0:
         equalities = np.pad(equalities, ((0,0), (0,extra_count)), 'constant', constant_values=0)
-
-    Z = np.pad(Z, (0, S_count), 'constant', constant_values=0)
 
     # to keep track of index of basic variables and their coefficients
     basic_index = []
@@ -125,20 +131,18 @@ if __name__ == '__main__' :
     # adding extra variables to inequalities
     for i in range(n1):
         inequalities[i][var_count + i] = S_coeff[i]
+
         if S_coeff[i] == -1:
             inequalities[i][temp] = 1
             temp += 1
+            basic_index.append(temp)
         else:
             basic_index.append(var_count + i)
 
-    # adding extra variables to equalities
+    # adding artificial variables to equalities
     for i in range(n2):
         equalities[i][var_count + n1 + a_count_1 + i] = 1
         basic_index.append(var_count + n1 + a_count_1 + i)
-
-    # getting coefficients for the basic variables
-    for i in basic_index:
-        basic_coeff.append(Z[i])
 
     # generating the simplex table
     if n1 == 0:
@@ -147,7 +151,7 @@ if __name__ == '__main__' :
         table = inequalities
     else:
         table = np.append(inequalities, equalities, axis=0)
-        B = np.reshape(B, (extra_count, 1))
+        B = np.reshape(B, (n1+n2, 1))
         table = np.append(table, B, axis=1)
 
     '''
@@ -158,13 +162,16 @@ if __name__ == '__main__' :
     Z_ = np.zeros(var_count + S_count)
     Z_ = np.pad(Z_, (0, a_count), 'constant', constant_values=1)
 
+    # getting coefficients for the basic variables
+    for i in basic_index:
+        basic_coeff.append(Z_[i])
+
     # calculating profit
+    n = var_count + a_count + S_count
     P = calculateProfit(table, Z_, basic_coeff, extra_count+var_count)
+    print(P)
 
-    # list to compare profit to
-    all_true = np.ones(var_count+extra_count, dtype=bool)
-
-    while (P >= 0) != all_true:
+    while checkOptimalCondition(P):
 
         # getting the entering variable
         # no need to worry about positive profit
@@ -176,11 +183,14 @@ if __name__ == '__main__' :
 
         # finding the leaving variable
         row_index = -1
-        temp = max(ratio)
+        temp = max(ratios)
         for i in range(n1 + n2):
             if ratios[i] > 0 and temp > ratios[i]:
                 temp = ratios[i]
                 row_index = i
+
+        # changing the list of basic variables
+        basic_index = []
 
         # when no leaving variable is found
         if row_index == -1:
@@ -190,3 +200,5 @@ if __name__ == '__main__' :
         table = gauss_jorad_elimination(table, row_index, column_index)
         
         P = calculateProfit(table, Z_, basic_coeff, extra_count+var_count)
+
+    print(table)
