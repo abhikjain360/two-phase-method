@@ -16,20 +16,29 @@ def calculateProfit(table, Z, basic_coeff, total_count):
 
 
 # method to check optimality condition for simplex method
-def checkOptimalCondition(P):
-    for i in P:
-        if P < 0:
-            return True
-    return False
+def optimalCondition(P, choice):
+    if choice == 'min':
+        for i in P:
+            if i < 0:
+                return True
+        return False
+    else:
+        for i in P:
+            if i > 0:
+                return True
+        return False
 
 # method to perform Gauss-Jordan Elimination on the simplex table
-def gauss_jorad_elimination(table, row_index, column_index):
+def gauss_jordan_elimination(table, row_index, column_index):
     
     # first converting the coefficient to 1
-    table[row_index] /= table[row_index][column_index]
+    table[row_index] = table[row_index]/table[row_index][column_index]
 
     # eliminating from rest of the constraints
-    for i in range(len(table)):
+    for i in range(row_index):
+        table[i] -= table[row_index] * table[i][column_index]
+    
+    for i in range(row_index+1, len(table)):
         table[i] -= table[row_index] * table[i][column_index]
 
     return table
@@ -105,6 +114,8 @@ if __name__ == '__main__' :
 
     for i in range(n1):
         if B[i] < 0:
+            inequalities[i] *= -1
+            B[i] *= -1
             a_count_1 += 1
             S_coeff[i] = -1
     
@@ -134,8 +145,8 @@ if __name__ == '__main__' :
 
         if S_coeff[i] == -1:
             inequalities[i][temp] = 1
-            temp += 1
             basic_index.append(temp)
+            temp += 1
         else:
             basic_index.append(var_count + i)
 
@@ -153,6 +164,7 @@ if __name__ == '__main__' :
         table = np.append(inequalities, equalities, axis=0)
         B = np.reshape(B, (n1+n2, 1))
         table = np.append(table, B, axis=1)
+    table = table.astype('float')
 
     '''
     phase 1
@@ -169,36 +181,41 @@ if __name__ == '__main__' :
     # calculating profit
     n = var_count + a_count + S_count
     P = calculateProfit(table, Z_, basic_coeff, extra_count+var_count)
-    print(P)
 
-    while checkOptimalCondition(P):
+    while optimalCondition(P, 'min'):
 
         # getting the entering variable
         # no need to worry about positive profit
         # as already eliminated in looping condition
         column_index = np.argmin(P)
 
+        T = table.transpose()
+
         # calculating the ratios
-        ratios = table[column_index]/table[-1]
+        ratios = T[-1]/T[column_index]
 
         # finding the leaving variable
         row_index = -1
-        temp = max(ratios)
+        temp = max(ratios) + 1
         for i in range(n1 + n2):
             if ratios[i] > 0 and temp > ratios[i]:
                 temp = ratios[i]
                 row_index = i
 
         # changing the list of basic variables
-        basic_index = []
+        basic_index[row_index] = column_index
+        basic_coeff[row_index] = Z_[column_index]
 
         # when no leaving variable is found
         if row_index == -1:
             print("No Solutions!!")
             exit(0)
         
-        table = gauss_jorad_elimination(table, row_index, column_index)
+        table = gauss_jordan_elimination(table, row_index, column_index)
         
         P = calculateProfit(table, Z_, basic_coeff, extra_count+var_count)
 
-    print(table)
+
+    '''
+    phase 2
+    '''
