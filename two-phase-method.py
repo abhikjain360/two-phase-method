@@ -163,9 +163,10 @@ if __name__ == '__main__' :
         table = inequalities
     else:
         table = np.append(inequalities, equalities, axis=0)
-        B = np.reshape(B, (n1+n2, 1))
-        table = np.append(table, B, axis=1)
+    B = np.reshape(B, (n1+n2, 1))
+    table = np.append(table, B, axis=1)
     table = table.astype('float')
+
 
     '''
     phase 1
@@ -180,7 +181,7 @@ if __name__ == '__main__' :
         basic_coeff.append(Z_[i])
 
     # calculating profit initially
-    P = calculateProfit(table, Z_, basic_coeff, extra_count+var_count)
+    P = calculateProfit(table, Z_, basic_coeff, S_count+var_count)
 
     # applying simplex method repititively
     while optimalCondition(P, 'min'):
@@ -216,6 +217,11 @@ if __name__ == '__main__' :
         
         P = calculateProfit(table, Z_, basic_coeff, extra_count+var_count)
 
+    # in case artificial variables are not eliminated
+    for i in range(var_count+S_count, var_count+extra_count):
+        if i in basic_index:
+            print("Artificial Variables can't be eliminated!\nNo Solution!!")
+
 
     '''
     phase 2
@@ -224,23 +230,23 @@ if __name__ == '__main__' :
     # removing all artificial variables from table
     B = table[:, -1]
     B = B.reshape((n1+n2, 1))
-    table = table[:, :-2]
+    table = table[:, :-a_count-1]
     table = np.append(table, B, axis=1)
 
     # getting coefficients for the basic variables
-    for i in basic_index:
-        basic_coeff.append(Z[i])
+    for i in range(n1+n2):
+        basic_coeff[i] = Z[basic_index[i]]
 
     # calculating profit initially
     P = calculateProfit(table, Z, basic_coeff, S_count+var_count)
 
     # applying simplex method repititively
-    while optimalCondition(P, 'min'):
+    while optimalCondition(P, 'max'):
 
         # getting the entering variable
         # no need to worry about positive profit
         # as already eliminated in looping condition
-        column_index = np.argmin(P)
+        column_index = np.argmax(P)
 
         T = table.transpose()
 
@@ -258,6 +264,10 @@ if __name__ == '__main__' :
         # changing the list of basic variables
         basic_index[row_index] = column_index
         basic_coeff[row_index] = Z[column_index]
+
+        print(table)
+        print(basic_index)
+        print(P)
 
         # when no leaving variable is found
         if row_index == -1:
