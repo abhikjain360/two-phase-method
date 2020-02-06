@@ -167,7 +167,6 @@ if __name__ == '__main__' :
     table = np.append(table, B, axis=1)
     table = table.astype('float')
 
-
     '''
     phase 1
     '''
@@ -221,6 +220,7 @@ if __name__ == '__main__' :
     for i in range(var_count+S_count, var_count+extra_count):
         if i in basic_index:
             print("Artificial Variables can't be eliminated!\nNo Solution!!")
+            exit(0)
 
 
     '''
@@ -252,7 +252,6 @@ if __name__ == '__main__' :
 
         # calculating the ratios
         ratios = T[-1]/T[column_index]
-
         # finding the leaving variable
         row_index = -1
         temp = max(ratios) + 1
@@ -264,10 +263,6 @@ if __name__ == '__main__' :
         # changing the list of basic variables
         basic_index[row_index] = column_index
         basic_coeff[row_index] = Z[column_index]
-
-        print(table)
-        print(basic_index)
-        print(P)
 
         # when no leaving variable is found
         if row_index == -1:
