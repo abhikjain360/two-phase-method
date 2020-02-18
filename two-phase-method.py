@@ -180,7 +180,10 @@ if __name__ == '__main__' :
         basic_coeff.append(Z_[i])
 
     # calculating profit initially
-    P = calculateProfit(table, Z_, basic_coeff, S_count+var_count)
+    P = calculateProfit(table, Z_, basic_coeff, extra_count+var_count)
+
+    print(table)
+    print(P)
 
     # applying simplex method repititively
     while optimalCondition(P, 'min'):
@@ -193,7 +196,7 @@ if __name__ == '__main__' :
         T = table.transpose()
 
         # calculating the ratios
-        ratios = T[-1]/T[column_index]
+        ratios = np.divide(T[-1],T[column_index])
 
         # finding the leaving variable
         row_index = -1
@@ -215,12 +218,19 @@ if __name__ == '__main__' :
         table = gauss_jordan_elimination(table, row_index, column_index)
         
         P = calculateProfit(table, Z_, basic_coeff, extra_count+var_count)
+        print(table)
+        print(P)
 
     # in case artificial variables are not eliminated
     for i in range(var_count+S_count, var_count+extra_count):
         if i in basic_index:
+            print(table)
+            print(P)
             print("Artificial Variables can't be eliminated!\nNo Solution!!")
             exit(0)
+
+        print(table)
+        print(P)
 
 
     '''
@@ -239,6 +249,9 @@ if __name__ == '__main__' :
 
     # calculating profit initially
     P = calculateProfit(table, Z, basic_coeff, S_count+var_count)
+
+    print(table)
+    print(P)
 
     # applying simplex method repititively
     while optimalCondition(P, 'max'):
@@ -273,5 +286,6 @@ if __name__ == '__main__' :
         
         P = calculateProfit(table, Z, basic_coeff, S_count+var_count)
 
-    print(table)
-    print(basic_index)
+        print(table)
+        print(P)
+        print(basic_index)

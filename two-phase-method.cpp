@@ -7,14 +7,17 @@ using namespace std;
 
 int main() 
 {
+    ios_base::sync_with_stdio(false);
+    cin.tie(NULL);
+    string str;
+    stringstream stream(str);
+
     //Objective function
     vector<int> Z;
 
     //taking objective function as input
-    string str;
     cout << "Enter the objective function : ";
     getline(cin, str);
-    stringstream stream(str);
     while (stream >> str)
         Z.push_back(stoi(str));
 
